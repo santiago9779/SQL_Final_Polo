@@ -1,1 +1,24 @@
+name: Proy_Final
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - dev
+      - qa
+
+jobs:
+  sonarcloud:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SonarCloud
+        uses: sonarsource/sonarcloud-github-action@master
+        with:
+          sonarcloud-organization: santiago9779
+          sonarcloud-project-key: santiago9779
 
