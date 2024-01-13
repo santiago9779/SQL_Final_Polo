@@ -1,0 +1,62 @@
+USE Master; 
+
+CREATE DATABASE nro15;
+
+USE nro15; 
+
+CREATE TABLE Ventas(
+[ID Venta] INT PRIMARY KEY IDENTITY,
+[Fecha] DATETIME NOT NULL,
+[ID Producto] INT NOT NULL,
+[Cantidad] INT); 
+
+CREATE TABLE Productos(
+[ID Producto] INT PRIMARY KEY,
+[Stock] INT); 
+
+INSERT INTO Productos VALUES(11502340,15),(11512341,70),(11522342,50); 
+
+SELECT * FROM Productos; 
+SELECT * FROM Ventas; 
+
+GO 
+CREATE PROCEDURE sp_transaccion(@Producto INT, @Cantidad INT)
+AS
+	BEGIN
+		INSERT INTO Ventas(Fecha,[ID Producto],[Cantidad])
+			VALUES(GETDATE(),@Producto,@Cantidad);
+			
+		UPDATE Productos SET Stock = Stock - @Cantidad
+			WHERE [ID Producto] = @Producto;
+
+	END
+GO
+
+EXEC sp_transaccion '11502340','5';
+
+-------------------------------------------------------------------
+
+GO
+CREATE PROCEDURE sp_aumento_costo(@var_aumento_costo DECIMAL(9,2),@var_marca VARCHAR(255))
+AS
+	BEGIN
+		SELECT	T1.[ID Producto],
+				CONVERT(DECIMAL(9,2),AVG(T1.[Costo Unitario])) AS [Sin Aumento],
+				-- CONVERT(DECIMAL(9,2),AVG([Costo Unitario])*10/100) AS [Aumento Nominal]
+				CONVERT(DECIMAL(9,2),AVG(T1.[Costo Unitario]) + CONVERT(DECIMAL(9,2),AVG(T1.[Costo Unitario])*@var_aumento_costo/100)) AS [Con Aumento]
+		FROM prod.FactTransacciones AS T1
+		LEFT JOIN prod.DimProductos AS T2 
+			ON T1.[ID Producto] = T2.[ID Producto]
+		LEFT JOIN prod.DimMarcas AS T3 
+			ON T2.[Marca] = T3.[ID Marca]
+		WHERE T3.[Nombre] LIKE CONCAT('%',@var_marca,'%')
+		GROUP BY T1.[ID Producto]
+	END
+GO
+
+DROP PROCEDURE sp_aumento_costo; 
+
+EXEC sp_aumento_costo '5.00','Veluz'
+
+SELECT * FROM prod.DimProductos;
+SELECT * FROM prod.DimMarcas; 
