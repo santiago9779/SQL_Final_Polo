@@ -1,1 +1,0 @@
-https://learn.microsoft.com/es-es/sql/t-sql/language-elements/if-else-transact-sql?view=sql-server-ver16
